@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Language Recognition System</title>
+    <link rel="stylesheet" href="./styles/style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+        <h1 class="header__title">Sign Language Recognition System</h1>
+        <nav class="header__nav">
+          <button class="nav-btn active" data-section="home">Home</button>
+          <button class="nav-btn" data-section="about">About</button>
+          <button class="nav-btn" data-section="settings">Settings</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="container">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+          <div class="app-grid">
+            <!-- Video Capture Section -->
+            <div class="video-section">
+              <div class="card">
+                <div class="card__header">
+                  <h2>Video Capture</h2>
+                  <div class="status-indicator">
+                    <span class="status-dot" id="connectionStatus"></span>
+                    <span id="statusText">Ready</span>
+                  </div>
+                </div>
+                <div class="card__body">
+                  <div class="video-container">
+                    <video id="videoElement" autoplay muted></video>
+                    <canvas id="videoCanvas" style="display: none"></canvas>
+                    <div class="recording-overlay hidden" id="recordingOverlay">
+                      <div class="recording-indicator">
+                        <span class="recording-dot"></span>
+                        <span>REC</span>
+                        <span id="recordingTimer">00:00</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="video-controls">
+                    <button class="btn btn--primary" id="startBtn">
+                      Start Camera
+                    </button>
+                    <button class="btn btn--secondary" id="recordBtn" disabled>
+                      Start Recording
+                    </button>
+                    <button class="btn btn--outline" id="snapshotBtn" disabled>
+                      Take Snapshot
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+              <div class="card">
+                <div class="card__header">
+                  <h2>Recognition Results</h2>
+                  <button class="btn btn--sm btn--outline" id="clearResultsBtn">
+                    Clear All
+                  </button>
+                </div>
+                <div class="card__body">
+                  <div class="processing-status hidden" id="processingStatus">
+                    <div class="processing-spinner"></div>
+                    <span id="processingText">Processing...</span>
+                  </div>
+
+                  <div class="word-results" id="wordResults">
+                    <p class="empty-state">
+                      Start recording to see recognized words
+                    </p>
+                  </div>
+
+                  <div class="sentence-area">
+                    <h3>Generated Sentence</h3>
+                    <div class="sentence-display" id="sentenceDisplay">
+                      <p class="empty-state">Words will form sentences here</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Text-to-Speech Section -->
+            <div class="speech-section">
+              <div class="card">
+                <div class="card__header">
+                  <h2>Text-to-Speech</h2>
+                  <div class="auto-speech-toggle">
+                    <label>
+                      <input type="checkbox" id="autoSpeechToggle" checked />
+                      Auto-speak
+                    </label>
+                  </div>
+                </div>
+                <div class="card__body">
+                  <div class="speech-controls">
+                    <button class="btn btn--primary" id="playBtn" disabled>
+                      <span class="btn-icon">▶</span>
+                      Play
+                    </button>
+                    <button class="btn btn--secondary" id="pauseBtn" disabled>
+                      <span class="btn-icon">⏸</span>
+                      Pause
+                    </button>
+                    <button class="btn btn--secondary" id="stopBtn" disabled>
+                      <span class="btn-icon">⏹</span>
+                      Stop
+                    </button>
+                  </div>
+
+                  <div class="speech-settings">
+                    <div class="form-group">
+                      <label class="form-label" for="voiceSelect">Voice</label>
+                      <select class="form-control" id="voiceSelect">
+                        <option value="0">Default Female</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="volumeSlider"
+                        >Volume: <span id="volumeValue">1.0</span></label
+                      >
+                      <input
+                        type="range"
+                        class="slider"
+                        id="volumeSlider"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value="1"
+                      />
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="rateSlider"
+                        >Speed: <span id="rateValue">1.0</span></label
+                      >
+                      <input
+                        type="range"
+                        class="slider"
+                        id="rateSlider"
+                        min="0.5"
+                        max="2"
+                        step="0.1"
+                        value="1"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="section hidden">
+          <div class="card">
+            <div class="card__header">
+              <h2>About This System</h2>
+            </div>
+            <div class="card__body">
+              <div class="about-content">
+                <div class="architecture-diagram">
+                  <img
+                    src="https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/787c728734f62ad0e8d9e8b284f4dcd1/3e69fc07-fb76-4390-a3eb-e3f65bf61e9c/7fce12d1.png"
+                    alt="Sign Language Recognition Architecture"
+                  />
+                  <p class="diagram-caption">System Architecture Overview</p>
+                </div>
+
+                <div class="about-text">
+                  <h3>How It Works</h3>
+                  <ol>
+                    <li>
+                      <strong>Video Capture:</strong> Records sign language
+                      gestures using your camera
+                    </li>
+                    <li>
+                      <strong>Vision Processing:</strong> Uses a Vision
+                      Transformer model to analyze hand movements and gestures
+                    </li>
+                    <li>
+                      <strong>Word Recognition:</strong> Identifies individual
+                      sign language words with confidence scores
+                    </li>
+                    <li>
+                      <strong>Sentence Construction:</strong> An NLP transformer
+                      converts recognized words into coherent sentences
+                    </li>
+                    <li>
+                      <strong>Speech Synthesis:</strong> Converts the generated
+                      text to speech for audio output
+                    </li>
+                  </ol>
+
+                  <h3>Features</h3>
+                  <ul>
+                    <li>Real-time sign language recognition</li>
+                    <li>Confidence scoring for predictions</li>
+                    <li>Intelligent sentence formation</li>
+                    <li>Customizable text-to-speech settings</li>
+                    <li>Support for multiple voices and languages</li>
+                    <li>Responsive design for all devices</li>
+                  </ul>
+
+                  <h3>Technology Stack</h3>
+                  <p>
+                    This application demonstrates a complete AI pipeline using
+                    modern web technologies, computer vision, and natural
+                    language processing to bridge communication gaps for the
+                    deaf and hard-of-hearing community.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="section hidden">
+          <div class="settings-grid">
+            <div class="card">
+              <div class="card__header">
+                <h2>Camera Settings</h2>
+              </div>
+              <div class="card__body">
+                <div class="form-group">
+                  <label class="form-label" for="cameraSelect"
+                    >Camera Device</label
+                  >
+                  <select class="form-control" id="cameraSelect">
+                    <option value="">Select Camera...</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="resolutionSelect"
+                    >Video Quality</label
+                  >
+                  <select class="form-control" id="resolutionSelect">
+                    <option value="640x480">Standard (640x480)</option>
+                    <option value="1280x720">HD (1280x720)</option>
+                    <option value="1920x1080">Full HD (1920x1080)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card__header">
+                <h2>Model Settings</h2>
+              </div>
+              <div class="card__body">
+                <div class="form-group">
+                  <label class="form-label" for="sensitivitySlider"
+                    >Model Sensitivity:
+                    <span id="sensitivityValue">0.8</span></label
+                  >
+                  <input
+                    type="range"
+                    class="slider"
+                    id="sensitivitySlider"
+                    min="0.5"
+                    max="1"
+                    step="0.05"
+                    value="0.8"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="languageSelect"
+                    >Recognition Language</label
+                  >
+                  <select class="form-control" id="languageSelect">
+                    <option value="asl">American Sign Language (ASL)</option>
+                    <option value="bsl">British Sign Language (BSL)</option>
+                    <option value="fsl">French Sign Language (FSL)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card__header">
+                <h2>Audio Settings</h2>
+              </div>
+              <div class="card__body">
+                <div class="form-group">
+                  <label class="form-label" for="outputDeviceSelect"
+                    >Audio Output</label
+                  >
+                  <select class="form-control" id="outputDeviceSelect">
+                    <option value="default">Default Speaker</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" id="soundEffectsToggle" checked />
+                    Enable Sound Effects
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>
+          &copy; 2025 Sign Language Recognition System. Built with AI and
+          accessibility in mind.
+        </p>
+        <div class="footer-links">
+          <a href="#" target="_blank">Documentation</a>
+          <a href="#" target="_blank">GitHub</a>
+          <a href="#" target="_blank">Support</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./js/app.js"></script>
+  </body>
+</html>
