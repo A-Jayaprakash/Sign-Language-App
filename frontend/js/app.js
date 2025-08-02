@@ -48,8 +48,126 @@ class SignLanguageApp {
 
     this.recognizedWords = [];
     this.currentSentence = "";
+    this.modelIntegration = new SignLanguageModelIntegration();
+    this.initializeModel();
+  }
+  async initializeModel() {
+    const statusElement = document.getElementById("modelStatus");
+    const progressElement = document.getElementById("loadingProgress");
+
+    try {
+      statusElement.textContent = "Loading AI Model...";
+      progressElement.style.width = "0%";
+
+      const success = await this.modelIntegration.loadModel();
+
+      if (success) {
+        statusElement.textContent = "AI Model Ready";
+        progressElement.style.width = "100%";
+        this.isModelReady = true;
+      } else {
+        statusElement.textContent = "Model Loading Failed - Using Mock Data";
+        this.isModelReady = false;
+      }
+    } catch (error) {
+      console.error("Model initialization error:", error);
+      statusElement.textContent = "Model Loading Failed - Using Mock Data";
+      this.isModelReady = false;
+    }
   }
 
+  async processVideoFrame() {
+    if (!this.isRecording || !this.isModelReady) {
+      return this.generateMockPrediction(); // Fallback to mock
+    }
+
+    try {
+      // Capture current frame from video
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const video = document.getElementById("videoElement");
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+
+      // Get prediction from model
+      const prediction = await this.modelIntegration.predictFromCanvas(canvas);
+
+      if (prediction && prediction.confidence > 0.7) {
+        return {
+          word: prediction.letter.toLowerCase(),
+          confidence: prediction.confidence,
+        };
+      } else {
+        return null; // Low confidence, ignore
+      }
+    } catch (error) {
+      console.error("Frame processing error:", error);
+      return this.generateMockPrediction(); // Fallback
+    }
+  }
+
+  // Update existing method to use real predictions
+  async simulateProcessing() {
+    const steps = this.processingSteps;
+    const statusText = document.getElementById("statusText");
+    const progressBar = document.getElementById("progressBar");
+
+    for (let i = 0; i < steps.length; i++) {
+      statusText.textContent = steps[i];
+      progressBar.style.width = `${((i + 1) / steps.length) * 100}%`;
+      await this.delay(500);
+    }
+
+    // Get real prediction instead of mock
+    const prediction = await this.processVideoFrame();
+
+    if (prediction) {
+      this.addRecognizedWord(prediction.word, prediction.confidence);
+    }
+
+    statusText.textContent = "Ready";
+    progressBar.style.width = "0%";
+  }
+  startRealTimeRecognition() {
+    if (!this.isModelReady) {
+      console.log("Model not ready for real-time recognition");
+      return;
+    }
+
+    this.realTimeInterval = setInterval(async () => {
+      if (this.isRecording) {
+        const prediction = await this.processVideoFrame();
+        if (prediction) {
+          this.updateRealTimeDisplay(prediction);
+        }
+      }
+    }, 1000); // Process every second
+  }
+
+  updateRealTimeDisplay(prediction) {
+    const letterElement = document.getElementById("predictedLetter");
+    const confidenceElement = document.getElementById("confidenceScore");
+
+    letterElement.textContent = prediction.word.toUpperCase();
+    confidenceElement.textContent = `${(prediction.confidence * 100).toFixed(
+      1
+    )}%`;
+
+    // Add visual feedback
+    letterElement.style.animation = "pulse 0.5s ease-in-out";
+    setTimeout(() => {
+      letterElement.style.animation = "";
+    }, 500);
+  }
+
+  stopRealTimeRecognition() {
+    if (this.realTimeInterval) {
+      clearInterval(this.realTimeInterval);
+      this.realTimeInterval = null;
+    }
+  }
   initializeProperties() {
     this.mediaStream = null;
     this.mediaRecorder = null;
@@ -731,6 +849,81 @@ class SignLanguageApp {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
+// Enhanced error handling
+class ErrorHandler {
+  static showUserFriendlyError(error, fallbackAction) {
+    const errorMessages = {
+      MODEL_LOAD_FAILED: "AI model failed to load. Using demonstration mode.",
+      CAMERA_ACCESS_DENIED:
+        "Camera access denied. Please enable camera permissions.",
+      PREDICTION_FAILED:
+        "Recognition temporarily unavailable. Please try again.",
+      BROWSER_NOT_SUPPORTED:
+        "Your browser doesn't support all required features.",
+    };
+
+    const message =
+      errorMessages[error.type] || "An unexpected error occurred.";
+
+    // Show user-friendly notification
+    this.showNotification(message, "warning");
+
+    // Execute fallback action
+    if (fallbackAction) {
+      fallbackAction();
+    }
+  }
+
+  static showNotification(message, type = "info") {
+    const notification = document.createElement("div");
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.remove();
+    }, 5000);
+  }
+}
+
+// Add performance monitoring
+class PerformanceMonitor {
+  constructor() {
+    this.metrics = {
+      modelLoadTime: 0,
+      averageInferenceTime: 0,
+      totalPredictions: 0,
+    };
+  }
+
+  startTimer() {
+    return performance.now();
+  }
+
+  endTimer(startTime, operation) {
+    const endTime = performance.now();
+    const duration = endTime - startTime;
+
+    if (operation === "inference") {
+      this.metrics.totalPredictions++;
+      this.metrics.averageInferenceTime =
+        (this.metrics.averageInferenceTime *
+          (this.metrics.totalPredictions - 1) +
+          duration) /
+        this.metrics.totalPredictions;
+    }
+
+    return duration;
+  }
+
+  getMetrics() {
+    return this.metrics;
+  }
+}
+
+// Add to main app
+const performanceMonitor = new PerformanceMonitor();
 
 // Initialize the application when the DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {

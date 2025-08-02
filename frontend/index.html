@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sign Language Recognition System</title>
     <link rel="stylesheet" href="./styles/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="./js/model-integration.js"></script>
   </head>
   <body>
     <header class="header">
@@ -55,6 +57,23 @@
                     <button class="btn btn--outline" id="snapshotBtn" disabled>
                       Take Snapshot
                     </button>
+                  </div>
+                  <div class="model-status">
+                    <span id="modelStatus">Loading AI Model...</span>
+                    <div class="loading-bar" id="loadingBar">
+                      <div class="loading-progress" id="loadingProgress"></div>
+                    </div>
+                  </div>
+                  <div class="letter-recognition">
+                    <h3>Real-time Letter Recognition</h3>
+                    <div class="recognition-result">
+                      <span class="predicted-letter" id="predictedLetter"
+                        >-</span
+                      >
+                      <span class="confidence-score" id="confidenceScore"
+                        >0%</span
+                      >
+                    </div>
                   </div>
                 </div>
               </div>
